@@ -48,7 +48,7 @@
 # ax.set_xlim([-1, 6])
 # ax.set_ylim([-5, 2])
 # ax.set_zlim([0, 50])
-# ax.set_title('Loss function minimization')
+# ax.set_title('Loss function minimization', fontsize=22, color='yellow')
 
 # # Descent path
 # path, = ax.plot([], [], [], 'r.-', markersize=5, label='Descent Path')
@@ -64,54 +64,54 @@
 # ani = FuncAnimation(fig, update, frames=len(points), interval=100, blit=False)
 # ani.save("loss_function_minimization.mp4", writer="ffmpeg", fps=30, dpi=500)
 
-import math
-import pandas as pd
-from manim import *
-import os 
+# import math
+# import pandas as pd
+# from manim import *
+# import os 
 
-class DataPoint(Dot):
-    def __init__(self, point: list | np.ndarray, x: float, y: float, color, **kwargs):
-        super().__init__(point=point, radius=.15, color=color, **kwargs)
-        self.x = x
-        self.y = y
+# class DataPoint(Dot):
+#     def __init__(self, point: list | np.ndarray, x: float, y: float, color, **kwargs):
+#         super().__init__(point=point, radius=.15, color=color, **kwargs)
+#         self.x = x
+#         self.y = y
 
-def create_model(data: pd.DataFrame, initial_m: float, initial_b: float) -> tuple:
+# def create_model(data: pd.DataFrame, initial_m: float, initial_b: float) -> tuple:
 
-    m_tracker = ValueTracker(initial_m)
-    b_tracker = ValueTracker(initial_b)
+#     m_tracker = ValueTracker(initial_m)
+#     b_tracker = ValueTracker(initial_b)
 
-    ax = Axes(
-        x_range=[-0.5, 10],
-        y_range=[-0.2, 1.3],
-        x_axis_config={"include_tip": False, "include_numbers": False},
-        y_axis_config={"include_tip": False, "include_numbers": True, "stroke_opacity": 0}
-    )
+#     ax = Axes(
+#         x_range=[-0.5, 10],
+#         y_range=[-0.2, 1.3],
+#         x_axis_config={"include_tip": False, "include_numbers": False},
+#         y_axis_config={"include_tip": False, "include_numbers": True, "stroke_opacity": 0}
+#     )
 
-    # plot points
-    false_points = [DataPoint(point=ax.c2p(p.x, p.y), x=p.x, y=p.y, color=RED) for p in data.itertuples() if p.y == 0.0]
-    true_points = [DataPoint(point=ax.c2p(p.x, p.y), x=p.x, y=p.y, color=BLUE) for p in data.itertuples() if p.y == 1.0]
-    points = [*true_points, *false_points]
+#     # plot points
+#     false_points = [DataPoint(point=ax.c2p(p.x, p.y), x=p.x, y=p.y, color=RED) for p in data.itertuples() if p.y == 0.0]
+#     true_points = [DataPoint(point=ax.c2p(p.x, p.y), x=p.x, y=p.y, color=BLUE) for p in data.itertuples() if p.y == 1.0]
+#     points = [*true_points, *false_points]
 
-    # plot function
-    f = lambda x: 1.0 / (1.0 + math.exp(-(b_tracker.get_value() + m_tracker.get_value() * x)))
-    plot = always_redraw(lambda: ax.plot(f, color=YELLOW))
+#     # plot function
+#     f = lambda x: 1.0 / (1.0 + math.exp(-(b_tracker.get_value() + m_tracker.get_value() * x)))
+#     plot = always_redraw(lambda: ax.plot(f, color=YELLOW))
 
-    # max line
-    max_line = DashedLine(start=ax.c2p(0, 1), end=ax.c2p(10, 1), color=WHITE)
+#     # max line
+#     max_line = DashedLine(start=ax.c2p(0, 1), end=ax.c2p(10, 1), color=WHITE)
 
-    # likelihood_lines
-    likelihood_lines = [
-        always_redraw(
-            lambda p=p: DashedLine(
-                start=p.get_center(),
-                end=ax.c2p(p.x, f(p.x)),
-                color=p.get_color()
-            )
-        )
-        for p in points
-    ]
+#     # likelihood_lines
+#     likelihood_lines = [
+#         always_redraw(
+#             lambda p=p: DashedLine(
+#                 start=p.get_center(),
+#                 end=ax.c2p(p.x, f(p.x)),
+#                 color=p.get_color()
+#             )
+#         )
+#         for p in points
+#     ]
 
-    return data, m_tracker, b_tracker, ax, points, true_points, false_points, plot, f, max_line, likelihood_lines
+#     return data, m_tracker, b_tracker, ax, points, true_points, false_points, plot, f, max_line, likelihood_lines
 
 # class LogisticRegressionScene(Scene):
 
@@ -241,7 +241,7 @@ def create_model(data: pd.DataFrame, initial_m: float, initial_b: float) -> tupl
 #         arrow = Arrow(full_image.get_right(), tiles.get_left(), color=YELLOW, tip_length=0.2).scale([0.7,1,1])
 #         self.play(GrowArrow(arrow))
 #         self.play(*[FadeIn(tile) for tile in tiles])
-#         title = Text("Feature Extraction", color=YELLOW).shift(UP*2)
+#         title = Text("Feature Extraction", font="Orbitron" , color=YELLOW).shift(UP*2)
 #         self.play(DrawBorderThenFill(title))
 #         self.wait()
 
@@ -250,118 +250,119 @@ def create_model(data: pd.DataFrame, initial_m: float, initial_b: float) -> tupl
 #             for j in range(cols):
 #                 os.remove(f"tile_{i}_{j}.png")
 
-# from manim import *
+from manim import *
 
-# class Main(Scene):
-#     def construct(self):
-#         # Create two large circles
-#         circle1 = Circle(radius=2.5, color=YELLOW).set_fill(YELLOW, opacity=0.2).shift(LEFT * 3.5)
-#         circle2 = Circle(radius=2.5, color=TEAL).set_fill(TEAL, opacity=0.2).shift(RIGHT * 3.5)
-#         self.play(Create(circle1), Create(circle2))
+class Main(Scene):
+    def construct(self):
+        self.wait(7)
+        circle1 = Circle(radius=2.5, color=YELLOW).set_fill(YELLOW, opacity=0.2).shift(LEFT * 3.5)
+        circle2 = Circle(radius=2.5, color=TEAL).set_fill(TEAL, opacity=0.2).shift(RIGHT * 3.5)
+        self.play(Create(circle1), Create(circle2))
 
-#         # Add labels to circles
-#         label1 = Text("Machine Learning", font="Orbitron", color=YELLOW).scale(0.5).next_to(circle1, UP)
-#         label2 = Text("Physics", font="Orbitron", color=TEAL).scale(0.5).next_to(circle2, UP)
-#         self.play(Write(label1), Write(label2))
+        # Add labels to circles
+        label1 = Text("Machine Learning", font="Orbitron", color=YELLOW).scale(0.5).next_to(circle1, UP)
+        label2 = Text("Physics", font="Orbitron", color=TEAL).scale(0.5).next_to(circle2, UP)
+        self.play(Write(label1), Write(label2))
 
-#         tip_style = dict(
-#             tip_shape_start=StealthTip,
-#             tip_shape_end=StealthTip
-#         )
-#         arrow1 = CurvedDoubleArrow(
-#             circle1.get_center() + UP * 2 + RIGHT,
-#             circle2.get_center() + UP * 2 + LEFT,
-#             radius=-5,**tip_style
-#         ).set_stroke(width=4)
+        tip_style = dict(
+            tip_shape_start=StealthTip,
+            tip_shape_end=StealthTip
+        )
+        arrow1 = CurvedDoubleArrow(
+            circle1.get_center() + UP * 2 + RIGHT,
+            circle2.get_center() + UP * 2 + LEFT,
+            radius=-5,**tip_style
+        ).set_stroke(width=4)
 
-#         arrow2 = DoubleArrow(
-#             circle1.get_center() + RIGHT,
-#             circle2.get_center() + LEFT,**tip_style
-#         ).set_stroke(width=4)
+        arrow2 = DoubleArrow(
+            circle1.get_center() + RIGHT,
+            circle2.get_center() + LEFT,**tip_style
+        ).set_stroke(width=4)
 
-#         arrow3 = CurvedDoubleArrow(
-#             circle1.get_center() + DOWN * 2 + RIGHT,
-#             circle2.get_center() + DOWN * 2 + LEFT,
-#             radius=5,**tip_style
-#         ).set_stroke(width=4)
+        arrow3 = CurvedDoubleArrow(
+            circle1.get_center() + DOWN * 2 + RIGHT,
+            circle2.get_center() + DOWN * 2 + LEFT,
+            radius=5,**tip_style
+        ).set_stroke(width=4)
 
-#         self.play(Create(arrow1), Create(arrow2), Create(arrow3))
-#         self.wait(5)
-#         self.play(FadeOut(*self.mobjects))
-#         ax = Axes(
-#             x_range=[0, 10, 1],
-#             y_range=[0, 10, 1],
-#             axis_config={"include_numbers": True},
-#         ).scale(0.7)
-#         self.play(Create(ax))
+        self.play(Create(arrow1), Create(arrow2), Create(arrow3))
+        self.wait(5)
+        self.play(FadeOut(*self.mobjects))
+        ax = Axes(
+            x_range=[0, 10, 1],
+            y_range=[0, 10, 1],
+            axis_config={"include_numbers": True},
+        ).scale(0.7)
+        self.play(Create(ax))
 
-#         # Generate synthetic data
-#         np.random.seed(42)
-#         x_data = np.linspace(1, 9, 15)
-#         true_slope = 0.8
-#         true_intercept = 1.5
-#         y_data = true_slope * x_data + true_intercept + np.random.normal(0, 1.5, size=x_data.shape)
+        # Generate synthetic data
+        np.random.seed(42)
+        x_data = np.linspace(1, 9, 15)
+        true_slope = 0.8
+        true_intercept = 1.5
+        y_data = true_slope * x_data + true_intercept + np.random.normal(0, 1.5, size=x_data.shape)
 
-#         # Show data points
-#         points = VGroup(*[
-#             Dot(ax.c2p(x, y), color=YELLOW) for x, y in zip(x_data, y_data)
-#         ])
-#         self.play(FadeIn(points, lag_ratio=0.1))
-#         self.wait()
+        # Show data points
+        points = VGroup(*[
+            Dot(ax.c2p(x, y), color=YELLOW) for x, y in zip(x_data, y_data)
+        ])
+        self.play(FadeIn(points, lag_ratio=0.1))
+        self.wait()
 
-#         # Set up slope and intercept as trackers
-#         slope_tracker = ValueTracker(-0.5)     # fake initial slope
-#         intercept_tracker = ValueTracker(9.0)  # fake initial intercept
+        # Set up slope and intercept as trackers
+        slope_tracker = ValueTracker(-0.5)     # fake initial slope
+        intercept_tracker = ValueTracker(9.0)  # fake initial intercept
 
-#         # Dynamic regression line using always_redraw
-#         def get_line():
-#             x_min, x_max = min(x_data), max(x_data)
-#             y_start = slope_tracker.get_value() * x_min + intercept_tracker.get_value()
-#             y_end = slope_tracker.get_value() * x_max + intercept_tracker.get_value()
-#             return ax.plot_line_graph(
-#                 x_values=[x_min, x_max],
-#                 y_values=[y_start, y_end],
-#                 line_color=TEAL,
-#                 stroke_width=2
-#             )
+        # Dynamic regression line using always_redraw
+        def get_line():
+            x_min, x_max = min(x_data), max(x_data)
+            y_start = slope_tracker.get_value() * x_min + intercept_tracker.get_value()
+            y_end = slope_tracker.get_value() * x_max + intercept_tracker.get_value()
+            return ax.plot_line_graph(
+                x_values=[x_min, x_max],
+                y_values=[y_start, y_end],
+                line_color=TEAL,
+                stroke_width=2
+            )
 
-#         regression_line = always_redraw(get_line)
-#         self.play(FadeIn(regression_line))
-#         self.wait()
+        regression_line = always_redraw(get_line)
+        self.play(FadeIn(regression_line))
+        self.wait()
 
-#         # Dotted vertical error lines from data points to regression line (also always updating)
-#         error_lines = VGroup()
-#         for x, y in zip(x_data, y_data):
-#             err_line = always_redraw(lambda x_=x, y_=y: DashedLine(
-#                 start=ax.c2p(x_, y_),
-#                 end=ax.c2p(x_, slope_tracker.get_value() * x_ + intercept_tracker.get_value()),
-#                 color=PURE_GREEN,
-#                 stroke_opacity=0.6
-#             ))
-#             error_lines.add(err_line)
-#         self.add(error_lines)
+        # Dotted vertical error lines from data points to regression line (also always updating)
+        error_lines = VGroup()
+        for x, y in zip(x_data, y_data):
+            err_line = always_redraw(lambda x_=x, y_=y: DashedLine(
+                start=ax.c2p(x_, y_),
+                end=ax.c2p(x_, slope_tracker.get_value() * x_ + intercept_tracker.get_value()),
+                color=PURE_GREEN,
+                stroke_opacity=0.6
+            ))
+            error_lines.add(err_line)
+        self.add(error_lines)
 
-#         # Animate slope and intercept to true values
-#         self.play(
-#             slope_tracker.animate.set_value(true_slope),
-#             intercept_tracker.animate.set_value(true_intercept),
-#             run_time=3
-#         )
+        # Animate slope and intercept to true values
+        self.play(
+            slope_tracker.animate.set_value(true_slope),
+            intercept_tracker.animate.set_value(true_intercept),
+            run_time=3
+        )
 
-#         self.wait()
-#         for obj in self.mobjects:
-#             obj.clear_updaters()
-#         graph_group = Group(*self.mobjects)
-#         self.play(graph_group.animate.scale(0.5).shift(UP*1.5+LEFT*3))
-#         arrow1 = Arrow(LEFT,RIGHT, tip_length=0.2, stroke_width=3, color=YELLOW).scale([0.8,1,1]).next_to(graph_group, RIGHT)
-#         arrow2 = Arrow(UP,DOWN, tip_length=0.2, stroke_width=3, color=YELLOW).scale([1,0.5,1]).next_to(graph_group, DOWN , aligned_edge=LEFT)
-#         arrow3 = Arrow(UP,DOWN, tip_length=0.2, stroke_width=3, color=YELLOW).scale([1,0.5,1]).next_to(graph_group, DOWN , aligned_edge=RIGHT)
-#         self.play(GrowArrow(arrow1),GrowArrow(arrow2),GrowArrow(arrow3))
-#         logistic_regression = Text("Logistic Regression", font="Orbitron", color=TEAL).scale(0.3).next_to(arrow1, RIGHT)
-#         neural_network = Text("Neural Networks", font="Orbitron", color=TEAL).scale(0.3).next_to(arrow2, DOWN)
-#         svm = Text("Support Vector Machines", font="Orbitron", color=TEAL).scale(0.3).next_to(arrow3, DOWN)
-#         self.play(FadeIn(logistic_regression,neural_network,svm))
-#         self.wait()
+        self.wait()
+        for obj in self.mobjects:
+            obj.clear_updaters()
+        graph_group = Group(*self.mobjects)
+        self.play(graph_group.animate.scale(0.5).shift(UP*1.5+LEFT*3))
+        arrow1 = Arrow(LEFT,RIGHT, tip_length=0.2, stroke_width=3, color=YELLOW).scale([0.8,1,1]).next_to(graph_group, RIGHT)
+        arrow2 = Arrow(UP,DOWN, tip_length=0.2, stroke_width=3, color=YELLOW).scale([1,0.5,1]).next_to(graph_group, DOWN , aligned_edge=LEFT)
+        arrow3 = Arrow(UP,DOWN, tip_length=0.2, stroke_width=3, color=YELLOW).scale([1,0.5,1]).next_to(graph_group, DOWN , aligned_edge=RIGHT)
+        self.play(GrowArrow(arrow1),GrowArrow(arrow2),GrowArrow(arrow3))
+        logistic_regression = Text("Logistic Regression", font="Orbitron", color=TEAL).scale(0.3).next_to(arrow1, RIGHT)
+        neural_network = Text("Neural Networks", font="Orbitron", color=TEAL).scale(0.3).next_to(arrow2, DOWN)
+        svm = Text("Support Vector Machines", font="Orbitron", color=TEAL).scale(0.3).next_to(arrow3, DOWN)
+        self.play(FadeIn(logistic_regression,neural_network,svm))
+        self.wait(5)
+        self.play(FadeOut(arrow1,arrow2,arrow3,logistic_regression,neural_network,svm), graph_group.animate.shift(UP))
 
 
 

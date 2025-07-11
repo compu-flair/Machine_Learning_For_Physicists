@@ -1,0 +1,6 @@
+# This file is used internally by FFMPEG.
+file 'file:C:/Users/iT HOME/Desktop/Machine_Learning_For_Physicists/1_Linear_Regression/media/videos/main/2160p60/partial_movie_files/SplitImage/uncached_00000.mp4'
+file 'file:C:/Users/iT HOME/Desktop/Machine_Learning_For_Physicists/1_Linear_Regression/media/videos/main/2160p60/partial_movie_files/SplitImage/uncached_00001.mp4'
+file 'file:C:/Users/iT HOME/Desktop/Machine_Learning_For_Physicists/1_Linear_Regression/media/videos/main/2160p60/partial_movie_files/SplitImage/uncached_00002.mp4'
+file 'file:C:/Users/iT HOME/Desktop/Machine_Learning_For_Physicists/1_Linear_Regression/media/videos/main/2160p60/partial_movie_files/SplitImage/uncached_00003.mp4'
+file 'file:C:/Users/iT HOME/Desktop/Machine_Learning_For_Physicists/1_Linear_Regression/media/videos/main/2160p60/partial_movie_files/SplitImage/uncached_00004.mp4'
