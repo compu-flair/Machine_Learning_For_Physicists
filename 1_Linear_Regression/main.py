@@ -1692,277 +1692,278 @@ class Segment3(Scene):
         # Animate time over 6 seconds
         self.play(t_tracker.animate.increment_value(6), run_time=2, rate_func=linear)
 
-        # reservoir = Square(side_length=5).scale(0.4).set_fill(YELLOW,opacity=0.2).set_stroke(color=WHITE).shift(UP)
-        # system = Square(side_length=2).scale(0.15).set_fill(TEAL, opacity=0.2).set_stroke(color=WHITE)
-        # system.move_to(reservoir.get_center())
-        # h_sys = MathTex(r"\mathcal{A}").scale(0.4)
-        # h_sys.move_to(system)
-        # h_res = MathTex(r"\mathcal{A}^{'}").scale(0.7)
-        # h_res.move_to(reservoir.get_corner(DL) + UR * 0.3)
-        # self.play(Create(system),Write(h_sys), Create(reservoir), Write(h_res))
-        # system_group = Group(reservoir,system,h_sys,h_res)
-        # axes1 = Axes(
-        #     x_range=[0, 100, 10],
-        #     y_range=[20, 90, 10],
-        #     x_length=10,
-        #     y_length=5,
-        #     axis_config={"include_tip": False},
-        #     x_axis_config={"numbers_to_include": [0, 50, 100]},
-        #     y_axis_config={"numbers_to_include": [22, 50, 85]},
-        # ).scale(0.3).next_to(reservoir, RIGHT*2, aligned_edge=DOWN)
+        reservoir = Square(side_length=5).scale(0.4).set_fill(YELLOW,opacity=0.2).set_stroke(color=WHITE).shift(UP)
+        system = Square(side_length=2).scale(0.15).set_fill(TEAL, opacity=0.2).set_stroke(color=WHITE)
+        system.move_to(reservoir.get_center())
+        h_sys = MathTex(r"\mathcal{A}").scale(0.4)
+        h_sys.move_to(system)
+        h_res = MathTex(r"\mathcal{A}^{'}").scale(0.7)
+        h_res.move_to(reservoir.get_corner(DL) + UR * 0.3)
+        system_group = Group(reservoir,system,h_sys,h_res)
+        axes1 = Axes(
+            x_range=[0, 100, 10],
+            y_range=[20, 90, 10],
+            x_length=10,
+            y_length=5,
+            axis_config={"include_tip": False},
+            x_axis_config={"numbers_to_include": [0, 50, 100]},
+            y_axis_config={"numbers_to_include": [22, 50, 85]},
+        ).scale(0.3).next_to(reservoir, RIGHT*2, aligned_edge=DOWN)
 
-        # # Labels
-        # x_label = axes1.get_x_axis_label("Time (minutes)").scale(0.5).set_color(YELLOW).shift(DOWN*0.7)
-        # y_label = axes1.get_y_axis_label("Temperature (°C)").scale(0.5).set_color(YELLOW).shift(LEFT*1.5)
-        # labels = VGroup(x_label, y_label)
+        # Labels
+        x_label = axes1.get_x_axis_label("Time (minutes)").scale(0.5).set_color(YELLOW).shift(DOWN*0.7)
+        y_label = axes1.get_y_axis_label("Temperature (°C)").scale(0.5).set_color(YELLOW).shift(LEFT*1.5)
+        labels = VGroup(x_label, y_label)
 
-        # # Room temperature line
-        # room_temp = 25
-        # x_min = axes.x_range[0]
-        # x_max = axes.x_range[1]
-        # room_line = DashedLine(
-        #     axes1.c2p(x_min, room_temp),
-        #     axes1.c2p(100, room_temp),
-        #     color=BLUE
-        # )
-        # room_label = Text("A'").scale(0.3).next_to(room_line, LEFT).set_color(BLUE)
+        # Room temperature line
+        room_temp = 25
+        x_min = axes.x_range[0]
+        x_max = axes.x_range[1]
+        room_line = DashedLine(
+            axes1.c2p(x_min, room_temp),
+            axes1.c2p(100, room_temp),
+            color=BLUE
+        )
+        room_label = Text("A'").scale(0.3).next_to(room_line, LEFT).set_color(BLUE)
 
-        # self.play(Create(room_line), FadeIn(room_label),Create(axes1), Write(labels))
+        # Coffee cooling function: T(t) = T_room + (T0 - T_room) * exp(-kt)
+        T0 = 85
+        k = 0.03
+        cooling_func = lambda t: room_temp + (T0 - room_temp) * np.exp(-k * t)
 
-        # # Coffee cooling function: T(t) = T_room + (T0 - T_room) * exp(-kt)
-        # T0 = 85
-        # k = 0.03
-        # cooling_func = lambda t: room_temp + (T0 - room_temp) * np.exp(-k * t)
+        # Dot and trace of coffee temperature
+        dot1 = Dot(color=RED).scale(0.5)
+        dot1.move_to(axes1.c2p(0, cooling_func(0)))
+        coffee_label = always_redraw(
+            lambda: Text("A").scale(0.3)
+            .next_to(dot1, DOWN*2)
+            .set_color(RED)
+        )
+        tracker = ValueTracker(0)
+        graph = always_redraw(
+            lambda: axes1.plot(
+                cooling_func,
+                x_range=[0, tracker.get_value()],
+                color=RED
+            )
+        )
 
-        # # Dot and trace of coffee temperature
-        # dot1 = Dot(color=RED).scale(0.5)
-        # dot1.move_to(axes1.c2p(0, cooling_func(0)))
-        # coffee_label = always_redraw(
-        #     lambda: Text("A").scale(0.3)
-        #     .next_to(dot1, DOWN*2)
-        #     .set_color(RED)
-        # )
-        # tracker = ValueTracker(0)
-        # graph = always_redraw(
-        #     lambda: axes1.plot(
-        #         cooling_func,
-        #         x_range=[0, tracker.get_value()],
-        #         color=RED
-        #     )
-        # )
+        # Dot follows the graph
+        dot1.add_updater(lambda m: m.move_to(axes1.c2p(tracker.get_value(), cooling_func(tracker.get_value()))))
+        self.play(Create(system),Write(h_sys), Create(reservoir), Write(h_res),Create(room_line), FadeIn(room_label),Create(axes1), Write(labels),FadeIn(dot1, coffee_label), Create(graph))
+        self.play(tracker.animate.set_value(100), run_time=1)
+        graph = Group(dot1, coffee_label,graph,room_line,room_label,axes1,x_label,y_label)
+        self.play(Indicate(Group(reservoir,h_res)))
+        self.wait(5)
+        rect3 = SurroundingRectangle(table.get_rows()[1]).scale([1.1,1,1])
+        self.play(Create(rect3))
+        self.wait(7)
+        self.play(FadeOut(problem1,dataset1,problem2, graph, rect3), table.animate.shift(RIGHT*4), system_group.animate.shift(RIGHT*2))
+        equation1 = MathTex(
+            r"P(\vec{x}) = \frac{1}{Z} e^{-F(\vec{x})}", color=ORANGE
+        ).scale(0.5).next_to(reservoir,LEFT*19, aligned_edge=UP).shift(UP*0.2)
+        self.play(Write(equation1))
+        rect4 = SurroundingRectangle(equation1[0][11:]).scale(0.9)
+        self.wait(2)
+        self.play(Create(rect4))
+        rect5 = SurroundingRectangle(equation1[0][8:9], color=TEAL).scale(0.9)
+        self.wait(2)
+        self.play(Create(rect5))
+        self.wait(5)
+        equation2 = MathTex(r"\vec{x} - \vec{\bar{x}} \ll 1", color=ORANGE)
+        equation2.scale(0.7)
+        equation2.to_edge(LEFT).shift(UP)
+        self.play(FadeIn(equation2, shift=RIGHT))
+        self.wait()
+        self.play(FadeOut(equation2, shift=LEFT), Uncreate(rect4), Uncreate(rect5))
+        expansion_box = RoundedRectangle(height=1,width=5).set_fill(TEAL , opacity=0.2).next_to(equation1, UP*1.5, aligned_edge=LEFT).shift(LEFT*1.2)
+        equation3 = MathTex(
+            r"F(\vec{x}) \approx F(\vec{\bar{x}}) + \frac{1}{2} (\vec{x} - \vec{\bar{x}}) \cdot \vec{\Sigma}^{-1} \cdot (\vec{x} - \vec{\bar{x}})",
+            color=YELLOW
+        ).scale(0.4).move_to(expansion_box).shift(LEFT*0.5)
+        self.play(Create(expansion_box))
+        self.play(Write(equation3))
+        self.wait()
+        rect6 = SurroundingRectangle(equation3[0][25:28])
+        self.play(Create(rect6))
+        self.wait(0.5)
+        self.play(Indicate(Group(x1, x2, x3, x4, x5, xn)))
+        expansion_box1 = RoundedRectangle(height=1,width=7).set_fill(TEAL , opacity=0.2).move_to(expansion_box, aligned_edge=LEFT+UP)
+        self.play(expansion_box.animate.become(expansion_box1), Uncreate(rect6))
+        equation4 = MathTex(
+            r"(\Sigma^{-1})_{ij} \equiv \left. \frac{\partial^2 F}{\partial x_i \, \partial x_j} \right|_{\vec{\bar{x}}}",
+            color=TEAL
+        ).scale(0.4).next_to(equation3, RIGHT*2, aligned_edge=UP)
+        self.play(Create(equation4))
+        self.wait(2)
+        rect7 = SurroundingRectangle(equation3[0][6:10], color=PURE_RED)
+        self.play(Create(rect7))
+        self.wait(5)
+        equation5 = MathTex(r"P(\vec{x}) = \frac{1}{(2\pi)^{n/2} \sqrt{\det \vec{\Sigma}}} \exp\left[ -\frac{1}{2} (\vec{x} - \vec{\bar{x}}) \cdot \vec{\Sigma}^{-1} \cdot (\vec{x} - \vec{\bar{x}}) \right]",
+                            color=ORANGE).scale(0.5).move_to(equation1, aligned_edge=LEFT+UP)
+        self.play(equation1.animate.become(equation5), Uncreate(rect7))
+        self.wait(19)
+        headers = [
+            MathTex("y", color=ORANGE),
+            MathTex("X", color=ORANGE)
+        ]
 
-        # # Dot follows the graph
-        # dot1.add_updater(lambda m: m.move_to(axes1.c2p(tracker.get_value(), cooling_func(tracker.get_value()))))
+        # Step 2: Create 4 rows of sample data + 1 row of vertical dots
+        data = [
+            ["1", "2.3"],
+            ["0", "1.7"],
+            ["1", "3.1"],
+            ["0", "2.0"],
+            [MathTex(r"\vdots", color=YELLOW), MathTex(r"\vdots",color=YELLOW)]
+        ]
 
+        # Step 3: Create the table
+        table2 = Table(
+            [[*row] for row in data],  # Ensure each row is list
+            col_labels=headers,
+            include_outer_lines=True,
+            line_config={"stroke_width": 1, "stroke_color":TEAL},
+            element_to_mobject=lambda elem: elem if isinstance(elem, Mobject) else Text(str(elem), font_size=24, color=YELLOW)
+        ).scale(0.3).move_to(table,aligned_edge=LEFT+UP).shift(RIGHT*0.9)
+        self.play(table.animate.become(table2))
+        equation6 =   MathTex(
+            r"""
+            \begin{array}{l}
+            \vec{X} = (x_1, x_2, \dots, x_{n-1}, y) \\
+            \text{where} \quad X = (x_1, \dots, x_{n-1})
+            \end{array}
+        """,
+        color=ORANGE
+        ).scale(0.7).next_to(table2, RIGHT*3, aligned_edge=UP)
+        self.play(FadeIn(equation6, shift=LEFT*3.5))
+        self.wait(2)
+        rect8 = SurroundingRectangle(table.get_entries((1,1)))
+        self.play(Create(rect8))
+        self.wait(2)
+        rect9 = SurroundingRectangle(table.get_entries((1,1))).shift(RIGHT*0.5)
+        self.play(Create(rect9))
+        self.wait(4)
+        equation7 = MathTex(r"P(y \mid X) = \frac{P(X, y)}{\int dy \, P(X, y)}",color=ORANGE).scale(0.5).next_to(equation5, DOWN*2, aligned_edge=LEFT)
+        self.play(FadeIn(equation7),Uncreate(rect8), Uncreate(rect9))
+        self.wait(8)
+        equation8 = MathTex(r"\hat{y} = \text{E}[y]= \int dy \, P(y \mid X) \, y",color=ORANGE).scale(0.5).next_to(equation7, DOWN*2, aligned_edge=LEFT)
+        self.play(FadeIn(equation8))
+        self.wait(4)
+        rect10 = SurroundingRectangle(equation5)
+        self.play(Create(rect10))
+        self.wait()
+        self.play(FadeOut(rect10))
+        equation9 = MathTex(r"\hat{y} = \beta_0 + \beta \cdot X",color=ORANGE).scale(0.5).next_to(equation8, DOWN*2, aligned_edge=LEFT)
+        group5 = Group(equation5.copy(), equation8.copy())
+        self.play(ReplacementTransform(group5,equation9))
+        self.wait()
+        self.play(FadeToColor(equation9,PURE_GREEN))
+        self.wait(5)
+        rect_15 = SurroundingRectangle(equation8[0][8:])
+        self.play(Create(rect_15))
+        expansion_box2 = RoundedRectangle(height=1,width=9.7).set_fill(TEAL , opacity=0.2).move_to(expansion_box, aligned_edge=LEFT+UP)
+        self.play(expansion_box.animate.become(expansion_box2))
+        equation10 = MathTex(r"\beta_0 = \bar{y}",color=PURE_GREEN).scale(0.4).next_to(equation4, RIGHT*2).shift(UP*0.3)
+        equation11 = MathTex(r"\beta_i = -\frac{1}{(\Sigma^{-1})_{nn}} \sum_{i=1}^{n-1} (\Sigma^{-1})_{in}(x_i - \bar{x}_i)",color=PURE_GREEN).scale(0.4).next_to(equation4, RIGHT*2).shift(DOWN*0.1)
+        self.play(equation9[0][3:5].copy().animate.become(equation10), equation9[0][7:].copy().animate.become(equation11))
+        self.wait(6)
+        self.play(FadeOut(equation1,equation7,equation8),FadeOut(rect_15))
+        self.play(equation9.animate.shift(UP*2))
+        self.wait(3)
+        arrow1 = Arrow(start=equation9.get_top(),
+                       end=equation9.get_top() +  UP,
+                       stroke_width=2)
+        label1 = Text("Hooke's Law:\nF = -kx", font="Orbitron", color=YELLOW).scale(0.4).next_to(arrow1, UP)
 
-        # self.play(FadeIn(dot1, coffee_label), Create(graph))
+        # Arrow 2 (right side)
+        arrow2 = Arrow(start=equation9.get_right() ,
+                       end=equation9.get_right() + RIGHT,
+                       stroke_width=2)
+        label2 = Text("Ohm's Law:\nV = IR", font="Orbitron", color=YELLOW).scale(0.4).next_to(arrow2.get_end(), RIGHT)
 
-        # # Animate cooling
-        # self.play(tracker.animate.set_value(100), run_time=2)
+        # Arrow 3 (lower left)
+        arrow3 = Arrow(start=equation9.get_bottom() ,
+                       end=equation9.get_bottom()+ DOWN,
+                       stroke_width=2)
+        label3 = Text("Newton's 2nd Law:\nF = ma", font="Orbitron", color=YELLOW).scale(0.4).next_to(arrow3.get_end(), DOWN)
+        self.play(Create(arrow1), Write(label1),
+                  Create(arrow2), Write(label2),
+                  Create(arrow3), Write(label3))
+        self.wait(5)
+        rect11 = SurroundingRectangle(reservoir, color=PINK)
+        rect12 = SurroundingRectangle(Group(table, equation6),color=PINK)
+        self.play(Create(rect11))
+        self.play(Create(rect12))
+        self.wait(12)
+        self.play(FadeOut(*self.mobjects))
+        entropy = Text("Entropy", font="Orbitron", color=YELLOW).scale(0.6).shift(UP*2.8)
+        self.play(DrawBorderThenFill(entropy))
+        second_law = MathTex(
+            r"\oint \frac{\delta Q}{T} \leq 0", color=ORANGE
+        ).scale(0.5).shift(LEFT*4)
+        max_entropy = MathTex(
+            r"\max_{P} \left( -\sum_{i} P(x_i) \log P(x_i) \right)",
+            color=ORANGE
+        ).scale(0.5).shift(RIGHT*4)
+        self.wait()
+        self.play(Create(second_law))
+        self.wait(2)
+        self.play(Create(max_entropy))
+        self.wait(3)
 
-        # self.wait()
-        # graph = Group(dot1, coffee_label,graph,room_line,room_label,axes1,x_label,y_label)
-        # self.wait()
+        box = Square(side_length=2).shift(DOWN*1.5+LEFT )
+        self.add(box)
 
-        # self.play(Indicate(Group(reservoir,h_res)))
+        # Create particles with motion life
+        particles = self.create_particles(count=50, box=box)
 
-        # rect3 = SurroundingRectangle(table.get_rows()[1]).scale([1.1,1,1])
-        # self.play(Create(rect3))
-        # self.wait()
-        # self.play(FadeOut(problem1,dataset1,problem2, graph, rect3), table.animate.shift(RIGHT*4), system_group.animate.shift(RIGHT*2))
-        # equation1 = MathTex(
-        #     r"P(\vec{x}) = \frac{1}{Z} e^{-F(\vec{x})}", color=ORANGE
-        # ).scale(0.5).next_to(reservoir,LEFT*19, aligned_edge=UP).shift(UP*0.2)
-        # self.play(Write(equation1))
-        # rect4 = SurroundingRectangle(equation1[0][11:]).scale(0.9)
-        # self.play(Create(rect4))
-        # self.wait()
-        # rect5 = SurroundingRectangle(equation1[0][8:9], color=TEAL).scale(0.9)
-        # self.play(Create(rect5))
-        # self.wait()
-        # equation2 = MathTex(r"\vec{x} - \vec{\bar{x}} \ll 1", color=ORANGE)
-        # equation2.scale(0.7)
-        # equation2.to_edge(LEFT).shift(UP)
-        # self.play(FadeIn(equation2, shift=RIGHT))
-        # self.wait()
-        # self.play(FadeOut(equation2, shift=LEFT), Uncreate(rect4), Uncreate(rect5))
-        # expansion_box = RoundedRectangle(height=1,width=5).set_fill(TEAL , opacity=0.2).next_to(equation1, UP*1.5, aligned_edge=LEFT).shift(LEFT*1.2)
-        # equation3 = MathTex(
-        #     r"F(\vec{x}) \approx F(\vec{\bar{x}}) + \frac{1}{2} (\vec{x} - \vec{\bar{x}}) \cdot \vec{\Sigma}^{-1} \cdot (\vec{x} - \vec{\bar{x}})",
-        #     color=YELLOW
-        # ).scale(0.4).move_to(expansion_box).shift(LEFT*0.5)
-        # self.play(Create(expansion_box))
-        # self.play(Write(equation3))
-        # self.wait()
-        # rect6 = SurroundingRectangle(equation3[0][25:28])
-        # self.play(Create(rect6))
-        # self.play(Indicate(Group(x1, x2, x3, x4, x5, xn)))
-        # self.wait()
-        # expansion_box1 = RoundedRectangle(height=1,width=7).set_fill(TEAL , opacity=0.2).move_to(expansion_box, aligned_edge=LEFT+UP)
-        # self.play(expansion_box.animate.become(expansion_box1), Uncreate(rect6))
-        # equation4 = MathTex(
-        #     r"(\Sigma^{-1})_{ij} \equiv \left. \frac{\partial^2 F}{\partial x_i \, \partial x_j} \right|_{\vec{\bar{x}}}",
-        #     color=TEAL
-        # ).scale(0.4).next_to(equation3, RIGHT*2, aligned_edge=UP)
-        # self.play(Create(equation4))
-        # rect7 = SurroundingRectangle(equation3[0][6:10], color=PURE_RED)
-        # self.play(Create(rect7))
-        # self.wait()
-        # equation5 = MathTex(r"P(\vec{x}) = \frac{1}{(2\pi)^{n/2} \sqrt{\det \vec{\Sigma}}} \exp\left[ -\frac{1}{2} (\vec{x} - \vec{\bar{x}}) \cdot \vec{\Sigma}^{-1} \cdot (\vec{x} - \vec{\bar{x}}) \right]",
-        #                     color=ORANGE).scale(0.5).move_to(equation1, aligned_edge=LEFT+UP)
-        # self.play(equation1.animate.become(equation5), Uncreate(rect7))
-        # self.wait()
-        # headers = [
-        #     MathTex("y", color=ORANGE),
-        #     MathTex("X", color=ORANGE)
-        # ]
+        self.add(*particles)
 
-        # # Step 2: Create 4 rows of sample data + 1 row of vertical dots
-        # data = [
-        #     ["1", "2.3"],
-        #     ["0", "1.7"],
-        #     ["1", "3.1"],
-        #     ["0", "2.0"],
-        #     [MathTex(r"\vdots", color=YELLOW), MathTex(r"\vdots",color=YELLOW)]
-        # ]
+        # Animate particles until they all stop
+        self.play(
+            UpdateFromFunc(Group(*particles), lambda m: self.move_until_stop(m, box)),
+            run_time=4,
+            rate_func=linear
+        )
+        self.wait(6)
+        self.play(Indicate(second_law),Indicate(max_entropy))
+        self.wait(5)
+        formula = MathTex(r"S = - \sum_i p_i \ln p_i", color=ORANGE).scale(0.6).next_to(entropy,DOWN*2)
+        self.play(Create(formula))
+        self.wait(10)
+        self.play(FadeOut(box,Group(*particles)))
+        expansion_box = RoundedRectangle(height=1, width=5).set_fill(color=TEAL, opacity=0.2).shift(LEFT*0.2+UP*0.5)
+        self.play(Create(expansion_box))
+        eq1 = MathTex(r"p(x)", color=YELLOW).scale(0.5).next_to(formula, DOWN*3+LEFT*3)
+        eq2 = MathTex(
+            r"\log p(x) \approx \log p(\mu) - \frac{1}{2}(x - \mu)^T H (x - \mu)",
+            color=YELLOW
+        ).scale(0.5).next_to(eq1, DOWN*2, aligned_edge=LEFT)
+        eq3 = MathTex(
+            r"p(x) \approx p(\mu) \exp\left( -\frac{1}{2}(x - \mu)^T H (x - \mu) \right)",
+            color=YELLOW
+        ).scale(0.5).next_to(eq2, DOWN*2, aligned_edge=LEFT)
+        eq4 = MathTex(
+            r"p(x) \approx \frac{1}{Z} \exp\left( -\frac{1}{2}(x - \mu)^T \Sigma^{-1} (x - \mu) \right)",
+            color=YELLOW
+        ).scale(0.5).next_to(eq3, DOWN*2, aligned_edge=LEFT)
 
-        # # Step 3: Create the table
-        # table2 = Table(
-        #     [[*row] for row in data],  # Ensure each row is list
-        #     col_labels=headers,
-        #     include_outer_lines=True,
-        #     line_config={"stroke_width": 1, "stroke_color":TEAL},
-        #     element_to_mobject=lambda elem: elem if isinstance(elem, Mobject) else Text(str(elem), font_size=24, color=YELLOW)
-        # ).scale(0.3).move_to(table,aligned_edge=LEFT+UP).shift(RIGHT*0.9)
-        # self.play(table.animate.become(table2))
-        # equation6 =   MathTex(
-        #     r"""
-        #     \begin{array}{l}
-        #     \vec{X} = (x_1, x_2, \dots, x_{n-1}, y) \\
-        #     \text{where} \quad X = (x_1, \dots, x_{n-1})
-        #     \end{array}
-        # """,
-        # color=ORANGE
-        # ).scale(0.7).next_to(table2, RIGHT*3, aligned_edge=UP)
-        # self.play(FadeIn(equation6, shift=LEFT*3.5))
-        # self.wait()
-        # rect8 = SurroundingRectangle(table.get_entries((1,1)))
-        # self.play(Create(rect8))
-        # rect9 = SurroundingRectangle(table.get_entries((1,1))).shift(RIGHT*0.5)
-        # self.play(Create(rect9))
-        # self.wait()
-        # equation7 = MathTex(r"P(y \mid X) = \frac{P(X, y)}{\int dy \, P(X, y)}",color=ORANGE).scale(0.5).next_to(equation5, DOWN*2, aligned_edge=LEFT)
-        # self.play(FadeIn(equation7),Uncreate(rect8), Uncreate(rect9))
-        # self.wait()
-        # equation8 = MathTex(r"\hat{y} = \text{E}[y]= \int dy \, P(y \mid X) \, y",color=ORANGE).scale(0.5).next_to(equation7, DOWN*2, aligned_edge=LEFT)
-        # self.play(FadeIn(equation8))
-        # self.wait()
-        # rect10 = SurroundingRectangle(equation5)
-        # self.play(Create(rect10))
-        # self.wait()
-        # self.play(FadeOut(rect10))
-        # equation9 = MathTex(r"\hat{y} = \beta_0 + \beta \cdot X",color=ORANGE).scale(0.5).next_to(equation8, DOWN*2, aligned_edge=LEFT)
-        # group5 = Group(equation5.copy(), equation8.copy())
-        # self.play(ReplacementTransform(group5,equation9))
-        # self.wait()
-        # expansion_box2 = RoundedRectangle(height=1,width=9.7).set_fill(TEAL , opacity=0.2).move_to(expansion_box, aligned_edge=LEFT+UP)
-        # self.play(expansion_box.animate.become(expansion_box2))
-        # equation10 = MathTex(r"\beta_0 = \bar{y}",color=PURE_GREEN).scale(0.4).next_to(equation4, RIGHT*2).shift(UP*0.3)
-        # equation11 = MathTex(r"\beta_i = -\frac{1}{(\Sigma^{-1})_{nn}} \sum_{i=1}^{n-1} (\Sigma^{-1})_{in}(x_i - \bar{x}_i)",color=PURE_GREEN).scale(0.4).next_to(equation4, RIGHT*2).shift(DOWN*0.1)
-        # self.play(equation9[0][3:5].copy().animate.become(equation10), equation9[0][7:].copy().animate.become(equation11))
-        # self.play(FadeOut(equation1,equation7,equation8))
-        # self.play(equation9.animate.shift(UP*2))
-        # arrow1 = Arrow(start=equation9.get_top(),
-        #                end=equation9.get_top() +  UP,
-        #                stroke_width=2)
-        # label1 = Text("Hooke's Law:\nF = -kx", font="Orbitron", color=YELLOW).scale(0.4).next_to(arrow1, UP)
-
-        # # Arrow 2 (right side)
-        # arrow2 = Arrow(start=equation9.get_right() ,
-        #                end=equation9.get_right() + RIGHT,
-        #                stroke_width=2)
-        # label2 = Text("Ohm's Law:\nV = IR", font="Orbitron", color=YELLOW).scale(0.4).next_to(arrow2.get_end(), RIGHT)
-
-        # # Arrow 3 (lower left)
-        # arrow3 = Arrow(start=equation9.get_bottom() ,
-        #                end=equation9.get_bottom()+ DOWN,
-        #                stroke_width=2)
-        # label3 = Text("Newton's 2nd Law:\nF = ma", font="Orbitron", color=YELLOW).scale(0.4).next_to(arrow3.get_end(), DOWN)
-        # self.play(Create(arrow1), Write(label1),
-        #           Create(arrow2), Write(label2),
-        #           Create(arrow3), Write(label3))
-        # self.wait()
-        # rect11 = SurroundingRectangle(reservoir, color=PINK)
-        # rect12 = SurroundingRectangle(Group(table, equation6),color=PINK)
-        # self.play(Create(rect11))
-        # self.play(Create(rect12))
-        # self.wait()
-        # self.play(FadeOut(*self.mobjects))
-        # self.wait()
-        # entropy = Text("Entropy", font="Orbitron", color=YELLOW).scale(0.6).shift(UP*2.8)
-        # self.play(DrawBorderThenFill(entropy))
-        # second_law = MathTex(
-        #     r"\oint \frac{\delta Q}{T} \leq 0", color=ORANGE
-        # ).scale(0.5).shift(LEFT*4)
-        # max_entropy = MathTex(
-        #     r"\max_{P} \left( -\sum_{i} P(x_i) \log P(x_i) \right)",
-        #     color=ORANGE
-        # ).scale(0.5).shift(RIGHT*4)
-        # self.play(Create(second_law))
-        # self.wait()
-        # self.play(Create(max_entropy))
-
-
-        # box = Square(side_length=2).shift(DOWN*1.5+LEFT )
-        # self.add(box)
-
-        # # Create particles with motion life
-        # particles = self.create_particles(count=50, box=box)
-
-        # self.add(*particles)
-
-        # # Animate particles until they all stop
-        # self.play(
-        #     UpdateFromFunc(Group(*particles), lambda m: self.move_until_stop(m, box)),
-        #     run_time=4,
-        #     rate_func=linear
-        # )
-        # self.wait()
-        # self.play(Indicate(second_law),Indicate(max_entropy))
-        # formula = MathTex(r"S = - \sum_i p_i \ln p_i", color=ORANGE).scale(0.6).next_to(entropy,DOWN*2)
-        # self.play(Create(formula))
-        # self.play(FadeOut(box,Group(*particles)))
-        # self.wait()
-        # expansion_box = RoundedRectangle(height=1, width=5).set_fill(color=TEAL, opacity=0.2).shift(LEFT*0.2+UP*0.5)
-        # self.play(Create(expansion_box))
-        # eq1 = MathTex(r"p(x)", color=YELLOW).scale(0.5).next_to(formula, DOWN*3+LEFT*3)
-        # eq2 = MathTex(
-        #     r"\log p(x) \approx \log p(\mu) - \frac{1}{2}(x - \mu)^T H (x - \mu)",
-        #     color=YELLOW
-        # ).scale(0.5).next_to(eq1, DOWN*2, aligned_edge=LEFT)
-        # eq3 = MathTex(
-        #     r"p(x) \approx p(\mu) \exp\left( -\frac{1}{2}(x - \mu)^T H (x - \mu) \right)",
-        #     color=YELLOW
-        # ).scale(0.5).next_to(eq2, DOWN*2, aligned_edge=LEFT)
-        # eq4 = MathTex(
-        #     r"p(x) \approx \frac{1}{Z} \exp\left( -\frac{1}{2}(x - \mu)^T \Sigma^{-1} (x - \mu) \right)",
-        #     color=YELLOW
-        # ).scale(0.5).next_to(eq3, DOWN*2, aligned_edge=LEFT)
-
-        # # Display each equation in sequence
-        # self.play(FadeIn(eq1))
-        # expansion_box1 = RoundedRectangle(height=2, width=5).set_fill(color=TEAL, opacity=0.2).move_to(expansion_box,aligned_edge=UP+LEFT)
-        # self.play(expansion_box.animate.become(expansion_box1))
-        # self.play(FadeIn(eq2))
-        # expansion_box2 = RoundedRectangle(height=3, width=5).set_fill(color=TEAL, opacity=0.2).move_to(expansion_box,aligned_edge=UP+LEFT)
-        # self.play(expansion_box.animate.become(expansion_box2))
-        # self.play(FadeIn(eq3))
-        # expansion_box3 = RoundedRectangle(height=4, width=5).set_fill(color=TEAL, opacity=0.2).move_to(expansion_box,aligned_edge=UP+LEFT)
-        # self.play(expansion_box.animate.become(expansion_box3))
-        # self.play(FadeIn(eq4))
-        # equation10 = MathTex(r"\beta_0 = \bar{y}",color=PURE_GREEN).scale(0.4).next_to(entropy, LEFT*20+DOWN*13, aligned_edge=UP)
-        # equation11 = MathTex(r"\beta_i = -\frac{1}{(\Sigma^{-1})_{nn}} \sum_{i=1}^{n-1} (\Sigma^{-1})_{in}(x_i - \bar{x}_i)",color=PURE_GREEN).scale(0.4).next_to(equation10, DOWN, aligned_edge=LEFT)
-        # self.play(Create(equation10),Create(equation11))
+        # Display each equation in sequence
+        self.play(FadeIn(eq1))
+        expansion_box1 = RoundedRectangle(height=2, width=5).set_fill(color=TEAL, opacity=0.2).move_to(expansion_box,aligned_edge=UP+LEFT)
+        self.play(expansion_box.animate.become(expansion_box1))
+        self.play(FadeIn(eq2))
+        expansion_box2 = RoundedRectangle(height=3, width=5).set_fill(color=TEAL, opacity=0.2).move_to(expansion_box,aligned_edge=UP+LEFT)
+        self.play(expansion_box.animate.become(expansion_box2))
+        self.play(FadeIn(eq3))
+        expansion_box3 = RoundedRectangle(height=4, width=5).set_fill(color=TEAL, opacity=0.2).move_to(expansion_box,aligned_edge=UP+LEFT)
+        self.play(expansion_box.animate.become(expansion_box3))
+        self.play(FadeIn(eq4))
+        self.wait(7)
+        equation10 = MathTex(r"\beta_0 = \bar{y}",color=PURE_GREEN).scale(0.4).next_to(entropy, LEFT*20+DOWN*13, aligned_edge=UP)
+        equation11 = MathTex(r"\beta_i = -\frac{1}{(\Sigma^{-1})_{nn}} \sum_{i=1}^{n-1} (\Sigma^{-1})_{in}(x_i - \bar{x}_i)",color=PURE_GREEN).scale(0.4).next_to(equation10, DOWN, aligned_edge=LEFT)
+        self.play(Create(equation10),Create(equation11))
+        self.wait(10)
 
 
     def create_particles(self, count, box):
@@ -2194,3 +2195,135 @@ class Segment3(Scene):
 #         self.play(FadeIn(dot), Write(label))
 #         self.wait()
 
+
+
+class S(Scene):
+    def construct(self):
+        W, H = 3, 3                  # inner width & height in scene units
+        R    = 0.04                  # particle radius
+        BUFFER = 0.1                # distance before the wall to reverse
+
+        # Draw the translucent box
+        wall = (
+            Rectangle(width=W, height=H, stroke_width=2)
+            .set_fill(YELLOW, opacity=0.10)
+            .move_to(ORIGIN)
+        )
+        self.add(wall)
+
+        # ----- particle settings -----
+        N           = 25             # number of particles
+        SPEED_MIN   = 1.0
+        SPEED_MAX   = 2.5
+
+        particles = VGroup()
+
+        # Calculate safe spawn bounds (inside walls by R)
+        half_W = W / 2
+        half_H = H / 2
+        spawn_xmin, spawn_xmax = -half_W + R, half_W - R
+        spawn_ymin, spawn_ymax = -half_H + R, half_H - R
+
+        for _ in range(N):
+            dot = Dot(radius=R, color=YELLOW)
+
+            # random start position
+            x0 = random.uniform(spawn_xmin, spawn_xmax)
+            y0 = random.uniform(spawn_ymin, spawn_ymax)
+            dot.move_to([x0, y0, 0])
+
+            # random unit velocity scaled by random speed
+            v = np.random.randn(2)
+            v /= np.linalg.norm(v)
+            v *= random.uniform(SPEED_MIN, SPEED_MAX)
+            dot.v = np.array([v[0], v[1], 0.0])
+
+            particles.add(dot)
+
+        self.add(particles)
+
+        # Pre‑compute early‑bounce boundaries (include R and BUFFER)
+        xmin = -half_W + R + BUFFER
+        xmax =  half_W - R - BUFFER
+        ymin = -half_H + R + BUFFER
+        ymax =  half_H - R - BUFFER
+
+        # ----- updater -----
+        def bounce(dot: Dot, dt: float):
+            # advance particle
+            dot.move_to(dot.get_center() + dot.v * dt)
+            x, y, _ = dot.get_center()
+
+            # left / right walls
+            if (x <= xmin and dot.v[0] < 0) or (x >= xmax and dot.v[0] > 0):
+                dot.v[0] *= -1
+                x = np.clip(x, xmin, xmax)
+                dot.move_to([x, y, 0])
+
+            # bottom / top walls
+            if (y <= ymin and dot.v[1] < 0) or (y >= ymax and dot.v[1] > 0):
+                dot.v[1] *= -1
+                y = np.clip(y, ymin, ymax)
+                dot.move_to([x, y, 0])
+
+        particles.add_updater(lambda mob, dt: [bounce(d, dt) for d in mob])
+
+        # run the animation
+        self.wait(5)
+
+        particles.clear_updaters()
+
+        group = Group(wall,particles)
+        self.play(group.animate.shift(UP+LEFT*3))
+        num_rows = 10
+        col_labels = [
+            MathTex(r"\text{time}~(t)", color=YELLOW),
+            MathTex(r"\text{particle}_1", color=YELLOW),
+            MathTex(r"\text{particle}_2", color=YELLOW),
+            MathTex(r"\text{particle}_3", color=YELLOW),
+            MathTex(r"\cdots", color=YELLOW),
+            MathTex(r"\text{particle}_N", color=YELLOW)
+        ]
+
+        # --- Data (symbolic) ---
+        table_data = []
+        for t in range(num_rows):
+            row = [MathTex(rf"t = {t}", color=YELLOW)]
+            row.append(MathTex(r"\left(x_{1},\, y_{1}\right),\left(vx_{1},\, vy_{1}\right)", color=YELLOW))
+            row.append(MathTex(r"\left(x_{2},\, y_{2}\right),\left(vx_{2},\, vy_{2}\right)", color=YELLOW))
+            row.append(MathTex(r"\left(x_{3},\, y_{3}\right),\left(vx_{3},\, vy_{3}\right)", color=YELLOW))
+            row.append(MathTex(r"\cdots", color=YELLOW))
+            row.append(MathTex(r"\left(x_{N},\, y_{N}\right),\left(vx_{N},\, vy_{N}\right)", color=YELLOW))
+            table_data.append(row)
+
+        # --- Create Manim Table ---
+        table = Table(
+            [[cell for cell in row] for row in table_data],
+            col_labels=col_labels,
+            include_outer_lines=True,
+            element_to_mobject=lambda elem: elem,
+            h_buff=0.6,
+            v_buff=0.5,
+            line_config={"stroke_color": TEAL}
+        ).scale(0.35).next_to(group, RIGHT*2, aligned_edge=UP)
+        headers = table.get_col_labels()
+        self.play(FadeIn(headers))
+        self.wait()
+
+        rows = table.get_rows()[1:]
+        for row in rows:
+    # Simulate state change: advance particles for a short "simulation step"
+            for dot in particles:
+                # manually move each particle forward slightly
+                dot.move_to(dot.get_center() + dot.v * 0.01)
+
+            # Create a snapshot of current particle state
+            snapshot_particles = particles.copy().clear_updaters()
+            snapshot_wall = wall.copy()
+            snapshot_group = Group(snapshot_wall, snapshot_particles)
+
+            # Transform snapshot into table row
+            self.play(ReplacementTransform(snapshot_group, row), run_time=0.4)
+            self.wait(0.1)        
+        self.play(Create(table.vertical_lines), Create(table.horizontal_lines))
+        self.wait()
